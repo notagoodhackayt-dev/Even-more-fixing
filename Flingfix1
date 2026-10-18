@@ -1,0 +1,87 @@
+-- LocalScript in StarterGui
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SelfFlingGui"
+screenGui.ResetOnSpawn = true
+screenGui.Parent = playerGui
+
+local button = Instance.new("TextButton")
+button.Name = "SelfFlingButton"
+button.Size = UDim2.new(0, 140, 0, 40) -- smaller
+button.Position = UDim2.new(0.5, -70, 0.75, 0)
+button.Text = "Self Fling!"
+button.TextScaled = true
+button.Active = true
+button.AutoButtonColor = true
+button.Parent = screenGui
+
+local dragging = false
+local dragInput
+local dragStart
+local startPosition
+
+button.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPosition = button.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+button.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (
+        input == dragInput
+        or input.UserInputType == Enum.UserInputType.Touch
+    ) then
+        local delta = input.Position - dragStart
+
+        button.Position = UDim2.new(
+            startPosition.X.Scale,
+            startPosition.X.Offset + delta.X,
+            startPosition.Y.Scale,
+            startPosition.Y.Offset + delta.Y
+        )
+    end
+end)
+
+button.Activated:Connect(function()
+    if dragging then return end
+
+    local character = player.Character
+        or player.CharacterAdded:Wait()
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+
+    if not hrp then return end
+
+    local bv = Instance.new("BodyVelocity")
+    bv.Velocity = Vector3.new(
+        math.random(-200, 200),
+        500,
+        math.random(-200, 200)
+    )
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.Parent = hrp
+
+    game:GetService("Debris"):AddItem(bv, 0.5)
+end)
