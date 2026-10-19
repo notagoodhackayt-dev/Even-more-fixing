@@ -8,7 +8,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SelfFlingGui"
-screenGui.ResetOnSpawn = true
+screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local button = Instance.new("TextButton")
